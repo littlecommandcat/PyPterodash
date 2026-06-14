@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Here is a clean, scannable, and professional `README.md` for your project, formatted in standard Markdown.
 
 ---
@@ -105,3 +106,4 @@ python main.py
 ## ⭐ Support the Project
 
 If this project helped you or you find it useful, please consider giving it a **Star**! It means a lot to us and helps keep the project alive. 🌟
+
