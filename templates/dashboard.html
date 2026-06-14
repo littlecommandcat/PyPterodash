@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="panel_title"></title>
+    <link rel="stylesheet" href="/static/css/dash.css">
+</head>
+
+<div id="custom-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+        <h3 id="modal-title">Notification</h3>
+        <p id="modal-message">Message content...</p>
+        <div class="modal-actions">
+            <button id="modal-cancel-btn" class="modal-btn btn-secondary" style="display: none;">Cancel</button>
+            <button id="modal-confirm-btn" class="modal-btn btn-primary">OK</button>
+        </div>
+    </div>
+</div>
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <p class="loading-text" data-i18n="loading_text">Processing, please wait...</p>
+    </div>
+</div>
+
+<body>
+
+    <div class="header-section">
+        <h1 data-i18n="panel_title"></h1>
+        <div class="header-controls">
+            <div class="beautiful-select-wrapper">
+                <select id="language-switcher" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="zh-TW">繁體中文</option>
+                </select>
+            </div>
+            <a href="/shop" class="shop-btn" data-i18n="shop_btn"></a>
+            <button class="logout-btn" onclick="handleLogout()" data-i18n="logout_btn"></button>
+        </div>
+    </div>
+
+    <p><span data-i18n="discord_id"></span><code>{{ user.discord_id|default(user.id) }}</code></p>
+    
+    {% set used_memory = namespace(value=0) %}
+    {% set used_cpu = namespace(value=0) %}
+    {% set used_disk = namespace(value=0) %}
+    
+    {% if servers %}
+        {% for s in servers %}
+            {% set used_memory.value = used_memory.value + (s.memory|default(0)|int) %}
+            {% set used_cpu.value = used_cpu.value + (s.cpu|default(0)|int) %}
+            {% set used_disk.value = used_disk.value + (s.disk|default(0)|int) %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="status-bar">
+        <strong data-i18n="status_title"></strong><br>
+        <span data-i18n="server_count"></span><code>{{ servers|length }}</code><br>
+        
+        <span data-i18n="ram_quota"></span>
+        <span data-i18n="used"></span> <code>{{ used_memory.value }} MB</code> / 
+        <span data-i18n="total"></span> {{ user.max_memory|default(0) }} MB 
+        (<span data-i18n="remaining"></span> {{ (user.max_memory|default(0)|int) - used_memory.value }} MB)<br>
+        
+        <span data-i18n="cpu_quota"></span>
+        <span data-i18n="used"></span> <code>{{ used_cpu.value }}%</code> / 
+        <span data-i18n="total"></span> {{ user.max_cpu|default(0) }}% 
+        (<span data-i18n="remaining"></span> {{ (user.max_cpu|default(0)|int) - used_cpu.value }}%)<br>
+        
+        <span data-i18n="disk_quota"></span>
+        <span data-i18n="used"></span> <code>{{ used_disk.value }} MB</code> / 
+        <span data-i18n="total"></span> {{ user.max_disk|default(0) }} MB 
+        (<span data-i18n="remaining"></span> {{ (user.max_disk|default(0)|int) - used_disk.value }} MB)
+    </div>
+
+    <div class="create-section">
+        <h2 data-i18n="create_title"></h2>
+        <form id="createServerForm" onsubmit="handleCreateServer(event)">
+            <input type="hidden" id="max_memory" value="{{ user.max_memory|default(0) }}">
+            <input type="hidden" id="used_memory" value="{{ used_memory.value }}">
+            <input type="hidden" id="user_discord_id" value="{{ user.discord_id|default(user.id) }}">
+
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="server_name" data-i18n="form_name"></label>
+                    <input type="text" id="server_name" required data-i18n-placeholder="form_name_placeholder">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="server_egg" data-i18n="form_type"></label>
+                    <div class="beautiful-select-wrapper" style="display: block; width: 100%;">
+                        <select id="server_egg" required>
+                            <option value="19">Python</option>
+                            <option value="23">Node.JS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="server_ram" data-i18n="form_ram"></label>
+                    <input type="number" id="server_ram" required min="128" step="1" value="1024">
+                </div>
+                <div class="form-group">
+                    <label for="server_cpu" data-i18n="form_cpu"></label>
+                    <input type="number" id="server_cpu" required min="25" step="1" value="100">
+                </div>
+                <div class="form-group full-width">
+                    <label for="server_disk" data-i18n="form_disk"></label>
+                    <input type="number" id="server_disk" required min="512" step="1" value="5120">
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" data-i18n="form_submit"></button>
+        </form>
+    </div>
+
+    <h2><span data-i18n="list_title"></span> (Total {{ servers|length }})</h2>
+
+    {% if servers %}
+        {% for server in servers %}
+            <div class="server-card" id="server-{{ server.server_id }}">
+                <div class="server-card-header">
+                    <h3><span data-i18n="server_name"></span>{{ server.server_name|default('Unnamed Server') }}</h3>
+                    <button class="delete-btn" onclick="handleDeleteServer('{{ server.server_id }}')" data-i18n="btn_delete"></button>
+                </div>
+                
+                <p><span data-i18n="server_id"></span><strong>{{ server.server_id }}</strong></p>
+                <p><span data-i18n="server_identifier"></span><code>{{ server.identifier }}</code></p>
+                
+                <p><span data-i18n="server_specs"></span>
+                    <code>{{ server.memory|default(0)|int }} MB RAM</code> | 
+                    <code>{{ server.cpu|default(0)|int }}% CPU</code> | 
+                    <code>{{ server.disk|default(0)|int }} MB DISK</code>
+                </p>
+                
+                <div class="action-links">
+                    <a href="https://panel.cat6666.me/servers/{{ server.identifier }}" target="_blank" data-i18n="btn_console"></a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p id="no-server-text" style="color: #666; font-style: italic;" data-i18n="no_server"></p>
+    {% endif %}
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

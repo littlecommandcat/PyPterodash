@@ -1,0 +1,9 @@
+pymongo
+fastapi
+slowapi
+uuid
+aiohttp
+datetime
+uvicorn
+python-dotenv
+py-dactyl
