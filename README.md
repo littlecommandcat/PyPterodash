@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-Here is a clean, scannable, and professional `README.md` for your project, formatted in standard Markdown.
-
----
-
 # Pterodactyl & Discord Automation Panel
 
 A FastAPI-based web application that automates Pterodactyl server deployment and management, integrated with Discord OAuth2 authentication and database logging.
