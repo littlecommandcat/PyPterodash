@@ -126,7 +126,7 @@ function initLogin() {
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            window.location.href = '/auth/login';
+            window.location.href = '/login';
         });
     }
 }
@@ -171,7 +171,7 @@ async function handleCreateServer(event) {
     startLoading();
 
     try {
-        const res = await fetch('/dashboard/server/create', {
+        const res = await fetch('/api/dashboard/server/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -201,7 +201,7 @@ async function handleDeleteServer(serverId) {
     startLoading();
 
     try {
-        const res = await fetch('/dashboard/server/delete', {
+        const res = await fetch('/api/dashboard/server/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ "server_id": serverId, "force": false })
@@ -221,7 +221,7 @@ async function handleDeleteServer(serverId) {
 }
 
 function handleLogout() {
-    fetch('/auth/logout', { method: 'POST' })
+    fetch('/api/auth/logout', { method: 'POST' })
     .then(() => window.location.href = '/');
 }
 
@@ -247,7 +247,7 @@ async function processPurchase(itemType) {
     startLoading();
 
     try {
-        const res = await fetch('/shop/buy', {
+        const res = await fetch('/api/trade/buy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

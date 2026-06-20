@@ -9,13 +9,35 @@ from pymongo import MongoClient
 class ConfigCache:
     def __init__(self):
         self.config = {}
+        self.price = {}
 
     def get_config(self, key: str, default: any = None, force: bool = True) -> str | None:
         if key not in self.config or force:
             load_dotenv()
             self.config[key] = os.environ.get(key)
 
-        return self.config.get(key) if self.config.get(key) else default
+        return self.config.get(key, default)
+    
+    def get_price(self, key: str, default: int = 5, force: bool = True) -> int:
+        if key not in self.config or force:
+            
+            file = "price.json"
+            if not os.path.exists(file):
+                logging.error("Couldn't find price.json")
+                return default
+                
+            try:
+                with open(file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.price = data
+
+            except json.JSONDecodeError:
+                logging.error(f"{file} json type error.")
+
+            except Exception as e:
+                logging.error(f"Price loaded error: {e}")
+            
+            return self.price.get(key, default)
 
 class DataManager:
 

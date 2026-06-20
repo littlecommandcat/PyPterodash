@@ -6,4 +6,5 @@ aiohttp
 datetime
 uvicorn
 python-dotenv
-py-dactyl
+brotli
+discord.py>=2.6.0

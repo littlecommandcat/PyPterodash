@@ -7,8 +7,9 @@ A FastAPI-based web application that automates Pterodactyl server deployment and
 Before setting up the project, ensure your environment meets the following requirements:
 
 * **Python:** `python 3.11` (or higher)
-* **Game Panel:** [Pterodactyl Panel](https://pterodactyl.io/) (Admin access required)
+* **Panel:** [Pterodactyl Panel](https://pterodactyl.io/) (Admin access required)
 * **Database:** MongoDB instance
+* **Discord:** Webhook
 
 ---
 
@@ -26,7 +27,7 @@ cp .env.example .env
 # Discord Bot OAuth2 Configurations
 client_id="YOUR_DISCORD_BOT_ID"
 client_secret="YOUR_DISCORD_BOT_SECRET"
-callback="http://localhost:8000/auth/callback"
+callback="http://localhost:8000/api/auth/callback"
 
 # MongoDB Database Settings
 mongo_uri="mongodb://localhost:27017"
@@ -41,7 +42,17 @@ location_ids=[2]
 PORT_RANGE="[]"
 
 # System Logs & Notifications
-webhook="https://discord.com/api/webhooks/..."
+discord_webhook="https://discord.com/api/webhooks/..."
+```
+
+3. Open `price.json` and fill your resource price(default price 5):
+
+```ini
+{
+    "ram": 5,
+    "cpu": 5,
+    "disk": 5
+}
 ```
 
 ### 📋 Configuration Fields Explained
@@ -93,10 +104,6 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 python main.py
 ```
-
-## ⚠️ Known Issues
-
-* **Pterodactyl Client:** The application still encounters occasional `Unclosed client session` errors during specific API requests, particularly during server deletion.
 
 ## ⭐ Support the Project
 

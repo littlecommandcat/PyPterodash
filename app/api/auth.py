@@ -1,10 +1,12 @@
-import json
 import logging
-from ..core import DiscordAuthService, config, limiter, datamanager, pterclient
+import json
+import datetime
+from discord import Embed
+from ..core import DiscordAuthService, config, limiter, datamanager, pterclient, dchook
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi import APIRouter, HTTPException, status, Request
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 discord_service = DiscordAuthService(
     client_id=config.get_config("client_id"),
@@ -12,24 +14,14 @@ discord_service = DiscordAuthService(
     redirect_uri=config.get_config("callback")
 )
 
-@router.get("/login")
-@limiter.limit("2/second;10/minute")
-async def login(request: Request):
-    login_url = discord_service.get_login_url()
-    return RedirectResponse(url=login_url)
-
 @router.get("/callback")
-@limiter.limit("3/second;10/minute")
+@limiter.limit("3/second;20/minute")
 async def callback(request: Request, code: str = None):
     if not code:
         raise HTTPException(status_code=400, detail="Missing code")
 
-    session = getattr(request.state, "session", None)
-    if not session:
-        raise HTTPException(status_code=500, detail="HTTP session not initial")
-
     try:
-        user_data = await discord_service.get_user_data(session, code)
+        user_data = await discord_service.get_user_data(code)
         discord_id = str(user_data.get("id"))
         user_email = user_data.get("email")
         user_name = user_data.get("username")
@@ -96,13 +88,22 @@ async def callback(request: Request, code: str = None):
                 update_data={"$set": update_data}
             )
 
+        embed = Embed(
+            title=f"Login",
+            timestamp=datetime.datetime.now(),
+            description=f"""User: <@{discord_id}>({user_name})
+Email: `{user_email}`
+""",
+        )
+        await dchook.post(embeds=[embed], username="[Auth]")
+        
         redirect_response = RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
         redirect_response.set_cookie(
             key="session_user", 
             value=json.dumps(user_data), 
             httponly=True,
             samesite="lax",
-            max_age=86400
+            max_age=10800
         )
         return redirect_response
 
@@ -111,7 +112,8 @@ async def callback(request: Request, code: str = None):
         raise HTTPException(status_code=400, detail=str(e))
     
 @router.post("/logout")
-async def logout():
+@limiter.limit("2/second;15/minute")
+async def logout(request: Request):
     response = JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"status": "success", "message": "logout successfully"}

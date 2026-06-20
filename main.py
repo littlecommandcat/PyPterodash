@@ -1,17 +1,18 @@
 import logging
-from contextlib import asynccontextmanager
-import aiohttp
 import uvicorn
 import json
+import aiohttp
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Depends, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
-from app.routes import auth, dash, shop
-from app.core import limiter, templates, pterclient
+from app.routes import dashboard, shop
+from app.core import limiter, templates, pterclient, DiscordAuthService, config, dchook
+from app.api import auth, dash, trade
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-
 # app = FastAPI()
 
 logging.basicConfig(
@@ -22,23 +23,23 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # async with aiohttp.ClientSession() as session:
-    #     app.state.session = session
-    #     yield
-    yield
+    async with aiohttp.ClientSession() as session:
+        app.state.session = session
+        yield
     await pterclient.close()
+    await dchook.close()
         # logging.info("[]")
 
-app = FastAPI(title="Discord Auth Dash with aiohttp", lifespan=lifespan)
+app = FastAPI(title="PyPterodash Discord Login", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# @app.middleware("http")
-# async def add_session_to_request(request: Request, call_next):
-#     request.state.session = app.state.session
-#     response = await call_next(request)
-#     return response
+@app.middleware("http")
+async def add_session_to_request(request: Request, call_next):
+    request.state.session = app.state.session
+    response = await call_next(request)
+    return response
 
 limiter = Limiter(key_func=get_remote_address)
 @app.exception_handler(RateLimitExceeded)
@@ -52,9 +53,11 @@ async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
         }
     )
 
+app.include_router(dashboard.router)
+app.include_router(shop.router)
 app.include_router(auth.router)
 app.include_router(dash.router)
-app.include_router(shop.router)
+app.include_router(trade.router)
 
 @app.get("/", response_class=HTMLResponse)
 @limiter.limit("5/second;20/minute")
@@ -71,6 +74,19 @@ async def index(request: Request):
         name="index.html", 
         context={"request": request}
     )
+
+discord_service = DiscordAuthService(
+    client_id=config.get_config("client_id"),
+    client_secret=config.get_config("client_secret"),
+    redirect_uri=config.get_config("callback")
+)
+
+@app.get("/login")
+@limiter.limit("2/second;10/minute")
+async def login(request: Request):
+    login_url = discord_service.get_login_url()
+    return RedirectResponse(url=login_url)
+
 
 
 if __name__ == "__main__":

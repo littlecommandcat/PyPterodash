@@ -1,5 +1,6 @@
 import json
 import aiohttp
+import logging
 from fastapi import HTTPException
 from fastapi.requests import Request
 
@@ -20,7 +21,7 @@ class DiscordAuthService:
             f"&scope=identify%20email"
         )
 
-    async def get_user_data(self, session: aiohttp.ClientSession, code: str) -> dict:
+    async def get_user_data(self, code: str) -> dict:
         data = {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
@@ -29,18 +30,18 @@ class DiscordAuthService:
             "redirect_uri": self.redirect_uri,
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-        async with session.post(self.token_url, data=data, headers=headers) as token_resp:
-            if token_resp.status != 200:
-                raise Exception("Failed to get token from Discord")
-            token_json = await token_resp.json()
-            access_token = token_json.get("access_token")
-
-        auth_headers = {"Authorization": f"Bearer {access_token}"}
-        async with session.get(self.user_url, headers=auth_headers) as user_resp:
-            if user_resp.status != 200:
-                raise Exception("Failed to get user data from Discord")
-            return await user_resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self.token_url, data=data, headers=headers) as token_resp:
+                if token_resp.status != 200:
+                    raise Exception("Failed to get token from Discord")
+                token_json = await token_resp.json()
+                access_token = token_json.get("access_token")
+            auth_headers = {"Authorization": f"Bearer {access_token}"}
+            
+            async with session.get(self.user_url, headers=auth_headers) as user_resp:
+                if user_resp.status != 200:
+                    raise Exception("Failed to get user data from Discord")
+                return await user_resp.json()
     
     @staticmethod
     def get_current_user(request: Request) -> str:
@@ -50,7 +51,7 @@ class DiscordAuthService:
             raise HTTPException(
                 status_code=307,
                 detail="Not authenticated",
-                headers={"Location": "/auth/login"},
+                headers={"Location": "/"},
             )
 
         return json.loads(user_data)

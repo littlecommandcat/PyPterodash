@@ -1,95 +1,12 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, status
-from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 import json
 import logging
-from ..core import DiscordAuthService, pterclient, templates, limiter, datamanager, config, get_webhook
+import datetime
+from discord import Embed, Button
+from fastapi import APIRouter, Depends, Request, HTTPException, status
+from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+from ..core import DiscordAuthService, pterclient, templates, limiter, datamanager, config, dchook
 
-router = APIRouter(prefix="/dashboard", tags=["Authentication"], dependencies=[Depends(DiscordAuthService.get_current_user)])
-
-
-
-@router.get("/", response_class=HTMLResponse)
-@limiter.limit("5/second;20/minute")
-async def show_dashboard_page(request: Request):
-    user_cookie_str = request.cookies.get("session_user")
-    if not user_cookie_str:
-        return RedirectResponse(url="/auth/login", status_code=status.HTTP_303_SEE_OTHER)
-    try:
-        user_data = json.loads(user_cookie_str)
-    except Exception:
-        return RedirectResponse(url="/auth/login", status_code=status.HTTP_303_SEE_OTHER)
-
-    discord_id = str(user_data.get("id"))
-    user_email = user_data.get("email")
-    user_name = user_data.get("username")
-
-    user_profile = datamanager.find_one(query={"discord_id": discord_id})
-    if not user_profile:
-        user_profile = {
-            "discord_id": discord_id,
-            "username": user_name,
-            "email": user_email,
-            "panel_id": None,
-            "coin": 0,
-            "max_memory": 0,
-            "max_cpu": 0,
-            "max_disk": 0,
-            "servers": []
-        }
-
-    panel_id = user_profile.get("panel_id")
-    synced_servers = user_profile.get("servers", [])
-
-    if user_email:
-        try:
-            if not panel_id or panel_id == "0":
-                existed, fetched_panel_id = await pterclient.check_user(discord_id=discord_id, email=user_email)
-                if existed and fetched_panel_id != "0":
-                    panel_id = str(fetched_panel_id)
-                    user_profile["panel_id"] = panel_id
-
-            if panel_id and panel_id != "0":
-                raw_servers = await pterclient.get_user_servers(panel_id=panel_id) or []
-                
-                fresh_servers = []
-                for s in raw_servers:
-                    attr = s.get("attributes", s)
-                    limits = attr.get("limits", {})
-                    
-                    fresh_servers.append({
-                        "server_id": attr.get("id"),
-                        "identifier": attr.get("identifier"),
-                        "server_name": attr.get("name"),
-                        "nest_id": attr.get("nest"),
-                        "egg_id": attr.get("egg"),
-                        "memory": int(limits.get("memory") or 0),
-                        "cpu": int(limits.get("cpu") or 0),
-                        "disk": int(limits.get("disk") or 0)
-                    })
-                
-                synced_servers = fresh_servers
-                user_profile["servers"] = synced_servers
-
-            datamanager.update_one(
-                query={"discord_id": discord_id},
-                update_data={"$set": {
-                    "username": user_name,
-                    "email": user_email,
-                    "panel_id": panel_id,
-                    "servers": synced_servers
-                }}
-            )
-
-        except Exception as ptero_err:
-            logging.error(f"Async failed: {ptero_err}")
-    return templates.TemplateResponse(
-        name="dashboard.html", 
-        context={
-            "request": request,
-            "user": user_profile,                
-            "servers": synced_servers
-        }
-    )
+router = APIRouter(prefix="/api/dashboard", tags=["Authentication"], dependencies=[Depends(DiscordAuthService.get_current_user)])
 
 @router.get("/servers")
 @limiter.limit("10/minute")
@@ -145,7 +62,7 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
         )
 
     discord_id = user.get("id")
-    discord_name = user.get("name")
+    discord_name = user.get("username")
     if not discord_id:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -271,12 +188,16 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
                 update_data={"$push": {"servers": new_server_entry}}
             )
             
-            webhook = get_webhook()
-            log_msg = f"{discord_id}\nCreate server(`{server_id}`)\n{pterclient.url}/server/{identifier}"
-            if webhook.is_async:
-                await webhook.send(log_msg, username="[Dash]")
-            else:
-                webhook.send(log_msg, username="[Dash]")
+            embed = Embed(
+                title=f"Create server(`{server_id}`)",
+                timestamp=datetime.datetime.now(),
+                description=f"""User: <@{discord_id}>({discord_name if discord_name else "Failed to get"})
+Email: `{user_email}`
+""",
+            url=f"{pterclient.base_url}/server/{identifier}"
+            )
+            embed.add_field(name="Data", value=f"```{new_server_entry}```", inline=False)
+            await dchook.post(embeds=[embed], username="[Dash]")
                 
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -286,7 +207,7 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
                     "data": {
                         "server_id": server_id,
                         "identifier": identifier,
-                        "url": f"{pterclient.url}/server/{identifier}"
+                        "url": f"{pterclient.base_url}/server/{identifier}"
                     }
                 }
             )
@@ -335,7 +256,8 @@ async def delete_server_route(request: Request, user: dict = Depends(DiscordAuth
             }
         )
     discord_id = user.get("id")
-    discord_name = user.get("name")
+    discord_name = user.get("username")
+    user_email = user.get("email")
     try:
         await pterclient.delete_server(server_id=str(server_id), force=force)
 
@@ -348,11 +270,15 @@ async def delete_server_route(request: Request, user: dict = Depends(DiscordAuth
             }
         )
 
-        webhook = get_webhook()
-        if webhook.is_async:
-            await webhook.send(f"{discord_id}\nDelete server(`{server_id}`)", username="[Dash]")
-        else:
-            webhook.send(f"{discord_id}\nDelete server(`{server_id}`)", username="[Dash]")
+        embed = Embed(
+            title=f"Delete server(`{server_id}`)",
+            timestamp=datetime.datetime.now(),
+            description=f"""User: <@{discord_id}>({discord_name if discord_name else "Failed to get"})
+Email: `{user_email}`
+""",
+        )
+        await dchook.post(embeds=[embed], username="[Dash]")
+             
         return {
             "status": "success",
             "message": f"{discord_id}\nDeleted server (id:{server_id}) successfully, records cleared."
