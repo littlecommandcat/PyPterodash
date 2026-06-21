@@ -8,3 +8,4 @@ uvicorn
 python-dotenv
 brotli
 discord.py>=2.6.0
+jinja2
