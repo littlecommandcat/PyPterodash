@@ -21,9 +21,9 @@ async def shop(request: Request):
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
     return templates.TemplateResponse(
-        name="shop.html", 
+        name="shop.html",
+        request=request,
         context={
-            "request": request,
             "user": user_profile,
             "ram": config.get_config("price.ram"),
             "cpu": config.get_config("price.cpu"),

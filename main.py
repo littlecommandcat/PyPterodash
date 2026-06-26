@@ -59,8 +59,9 @@ async def custom_401_handler(request: Request, exc: HTTPException):
     
     if "text/html" in accept_header:
         return templates.TemplateResponse(
-            name="401.html", 
-            context={"request": request, "detail": exc.detail},
+            name="401.html",
+            request=request,
+            context={"detail": exc.detail},
             status_code=status.HTTP_401_UNAUTHORIZED
         )
     
@@ -86,7 +87,7 @@ async def index(request: Request):
 
     return templates.TemplateResponse(
         name="index.html", 
-        context={"request": request}
+        request=request
     )
 
 discord_service = DiscordAuthService(

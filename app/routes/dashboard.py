@@ -80,9 +80,9 @@ async def show_dashboard_page(request: Request):
         except Exception as ptero_err:
             logging.error(f"Async failed: {ptero_err}")
     return templates.TemplateResponse(
-        name="dashboard.html", 
+        name="dashboard.html",
+        request=request,
         context={
-            "request": request,
             "user": user_profile,                
             "servers": synced_servers
         }
