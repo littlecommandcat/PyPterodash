@@ -24,35 +24,82 @@ cp .env.example .env
 2. Open `.env` and fill in your variables:
 
 ```ini
-# Discord Bot OAuth2 Configurations
-client_id="YOUR_DISCORD_BOT_ID"
+# Discord Bot OAuth2 Secret
 client_secret="YOUR_DISCORD_BOT_SECRET"
-callback="http://localhost:8000/api/auth/callback"
 
 # MongoDB Database Settings
 mongo_uri="mongodb://localhost:27017"
-mongo_db="your_database_name"
-mongo_collection="your_collection_name"
 
-# Pterodactyl Panel Settings
-panel_url="https://your-panel-url.com"
+# Pterodactyl Panel Key
 panel_key="ptla_your_admin_api_key_here"
-nest_id=7
-location_ids=[2]
-PORT_RANGE="[]"
 
-# System Logs & Notifications
+# System Logs & Notifications (Discord Webhook)
 discord_webhook="https://discord.com/api/webhooks/..."
 ```
 
-3. Open `price.json` and fill your resource price(default price 5):
+3. Open `setting.yml` and fill your dash settings:
 
-```ini
-{
-    "ram": 5,
-    "cpu": 5,
-    "disk": 5
-}
+```yml
+# Application Configuration
+app:
+  # Host address to bind the web server
+  host: "0.0.0.0"
+
+  # Port used by the web server
+  port: 8000
+
+  # Enable debug mode
+  debug: false
+
+
+# Discord OAuth2 Configuration
+discord:
+  # OAuth2 callback URL
+  # This URL must match the redirect URL configured in Discord Developer Portal
+  callback: "http://localhost:8000/api/auth/callback"
+
+  # Discord Application Client ID
+  client_id: "YOUR_DISCORD_CLIENT_ID"
+
+  # Discord server invite link
+  invite: "https://discord.gg/YOUR_INVITE_CODE"
+
+
+# Database Configuration
+database:
+  # Database name
+  db: "your_database_name"
+
+  # Collection name
+  collection: "your_collection_name"
+
+
+# Pterodactyl Configuration
+pterodactyl:
+  # Pterodactyl panel URL
+  url: "https://panel.example.com"
+
+  # Default Nest ID used when creating servers
+  nest_id: 1
+
+  # Available location IDs for server deployment
+  location_ids: 1
+
+  # Allowed port allocation range
+  # Leave empty to disable custom port restriction
+  port_range: []
+
+
+# Pricing Configuration
+price:
+  # Price per CPU
+  cpu: 5
+
+  # Price per MB of RAM
+  ram: 10
+
+  # Price per MB of disk storage
+  disk: 5
 ```
 
 ### 📋 Configuration Fields Explained
@@ -61,8 +108,8 @@ discord_webhook="https://discord.com/api/webhooks/..."
 | --- | --- |
 | `client_id` / `client_secret` | Obtained from the [Discord Developer Portal](https://discord.com/developers/applications). Used for user authentication. |
 | `callback` | The URL Discord redirects to after successful login. Must match the redirect URI set in the Discord portal. |
-| `mongo_*` | Credentials to connect to your local or remote MongoDB instance for caching and user quota tracking. |
-| `panel_url` / `panel_key` | Your Pterodactyl panel domain and an **Application API Key** with full administrator privileges. |
+| `mongo_*` / `database` | Credentials to connect to your local or remote MongoDB instance for caching and user quota tracking. |
+| `panel_key` / `panel` | Your Pterodactyl panel domain and an **Application API Key** with full administrator privileges. |
 | `nest_id` | The ID of the default Pterodactyl Nest used for deploying new servers (e.g., Node.js, Python Nests). |
 | `location_ids` | A list of node location IDs where new servers are allowed to be created. |
 | `webhook` | A Discord webhook URL used to log panel activities (e.g., server creation/deletion events). |

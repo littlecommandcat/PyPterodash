@@ -51,5 +51,9 @@
     "item_disk_desc": "擴充伺服器儲存空間",
     "price_disk_unit": "Coins / 1MB",
     "qty_disk_label": "購買數量 (MB)",
-    "buy_btn": "立即購買"
+    "buy_btn": "立即購買",
+    "401_title": "未授權登入",
+    "401_heading": "登入已逾時或未授權",
+    "401_redirect": "秒後將自動返回首頁",
+    "401_home": "回到首頁"
 }

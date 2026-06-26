@@ -3,7 +3,7 @@ import datetime
 from discord import Embed
 from fastapi import APIRouter, Request, status, Depends
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
-from ..core import datamanager, limiter, templates, dchook, config, DiscordAuthService
+from ..core import datamanager, limiter, templates, dchook, config, DiscordAuthService, AuthClient
 
 router = APIRouter(prefix="/api/trade", tags=["Authentication"], dependencies=[Depends(DiscordAuthService.get_current_user)])
 
@@ -21,7 +21,7 @@ async def buy_resources(request: Request):
             content={"status": "error", "message": "Request JSON error", "detail": str(e)}
         )
 
-    if not config.get_price(item_type, None):
+    if not config.get_config(f"price.{item_type}", None):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"status": "error", "message": "Unknown item type. Please select ram, cpu, or disk."}
@@ -40,16 +40,9 @@ async def buy_resources(request: Request):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"status": "error", "message": "Purchase quantity must be greater than 0."}
         )
-
-    user_cookie_str = request.cookies.get("session_user")
-    if not user_cookie_str:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"status": "error", "message": "Unauthorized. Please log in to access the shop."}
-        )
-        
+    
     try:
-        user_data = json.loads(user_cookie_str)
+        user_data = AuthClient.get_current_user(request)
         discord_id = str(user_data.get("id"))
     except Exception:
         return JSONResponse(
@@ -64,7 +57,7 @@ async def buy_resources(request: Request):
             content={"status": "error", "message": "User profile not found."}
         )
 
-    total_cost = config.get_price(item_type) * amount
+    total_cost = config.get_config(f"price.{item_type}") * amount
     current_coins = user_profile.get("coin", 0)
 
     if current_coins < total_cost:

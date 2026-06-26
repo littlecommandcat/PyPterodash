@@ -2,16 +2,16 @@ import logging
 import json
 import datetime
 from discord import Embed
-from ..core import DiscordAuthService, config, limiter, datamanager, pterclient, dchook
+from ..core import DiscordAuthService, config, limiter, datamanager, pterclient, dchook, AuthClient
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi import APIRouter, HTTPException, status, Request
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 discord_service = DiscordAuthService(
-    client_id=config.get_config("client_id"),
+    client_id=config.get_config("discord.client_id"),
     client_secret=config.get_config("client_secret"),
-    redirect_uri=config.get_config("callback")
+    redirect_uri=config.get_config("discord.callback")
 )
 
 @router.get("/callback")
@@ -66,6 +66,7 @@ async def callback(request: Request, code: str = None):
                 "discord_id": discord_id,
                 "username": user_name,
                 "email": user_email,
+                "admin": False,
                 "panel_id": panel_id,
                 "coin": 50,
                 "max_memory": 2048 if panel_id else 0,
@@ -96,11 +97,11 @@ Email: `{user_email}`
 """,
         )
         await dchook.post(embeds=[embed], username="[Auth]")
-        
+        encrypted = AuthClient.encrypt_session(user_data)
         redirect_response = RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
         redirect_response.set_cookie(
             key="session_user", 
-            value=json.dumps(user_data), 
+            value=encrypted, 
             httponly=True,
             samesite="lax",
             max_age=10800

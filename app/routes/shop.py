@@ -1,7 +1,7 @@
 import json
 from fastapi import APIRouter, Request, status, Depends
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
-from ..core import datamanager, limiter, templates, config, DiscordAuthService
+from ..core import datamanager, limiter, templates, config, DiscordAuthService, AuthClient
 
 router = APIRouter(prefix="/shop", tags=["Shop System"], dependencies=[Depends(DiscordAuthService.get_current_user)])
 
@@ -10,9 +10,8 @@ router = APIRouter(prefix="/shop", tags=["Shop System"], dependencies=[Depends(D
 @router.get("/", response_class=HTMLResponse)
 @limiter.limit("3/second")
 async def shop(request: Request):
-    user_cookie_str = request.cookies.get("session_user")
     try:
-        user_data = json.loads(user_cookie_str)
+        user_data = AuthClient.get_current_user(request)
         discord_id = str(user_data.get("id"))
     except Exception:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
@@ -26,8 +25,8 @@ async def shop(request: Request):
         context={
             "request": request,
             "user": user_profile,
-            "ram": config.get_price("ram"),
-            "cpu": config.get_price("cpu"),
-            "disk": config.get_price("disk")
+            "ram": config.get_config("price.ram"),
+            "cpu": config.get_config("price.cpu"),
+            "disk": config.get_config("price.disk")
         }
     )

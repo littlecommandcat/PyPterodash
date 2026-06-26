@@ -51,5 +51,9 @@
     "item_disk_desc": "Expand server storage space for maps",
     "price_disk_unit": "Coins / 1MB",
     "qty_disk_label": "Purchase Quantity (MB)",
-    "buy_btn": "Buy Now"
+    "buy_btn": "Buy Now",
+    "401_title": "Unauthorized Access",
+    "401_heading": "Your session has expired or you are not authorized.",
+    "401_redirect": "seconds before being redirected to the homepage.",
+    "401_home": "Return to Home"
 }

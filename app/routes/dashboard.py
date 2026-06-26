@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 import json
 import logging
-from ..core import DiscordAuthService, pterclient, templates, limiter, datamanager, config, dchook
+from ..core import DiscordAuthService, pterclient, templates, limiter, datamanager, config, dchook, AuthClient
 
 router = APIRouter(prefix="/dashboard", tags=["Authentication"], dependencies=[Depends(DiscordAuthService.get_current_user)])
 
@@ -11,12 +11,11 @@ router = APIRouter(prefix="/dashboard", tags=["Authentication"], dependencies=[D
 @router.get("/", response_class=HTMLResponse)
 @limiter.limit("1/2second")
 async def show_dashboard_page(request: Request):
-    user_cookie_str = request.cookies.get("session_user")
     try:
-        user_data = json.loads(user_cookie_str)
+        user_data = AuthClient.get_current_user(request)
     except Exception:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-
+    
     discord_id = str(user_data.get("id"))
     user_email = user_data.get("email")
     user_name = user_data.get("username")

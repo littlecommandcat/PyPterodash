@@ -1,0 +1,60 @@
+# Application Configuration
+app:
+  # Host address to bind the web server
+  host: "0.0.0.0"
+
+  # Port used by the web server
+  port: 8000
+
+  # Enable debug mode
+  debug: false
+
+
+# Discord OAuth2 Configuration
+discord:
+  # OAuth2 callback URL
+  # This URL must match the redirect URL configured in Discord Developer Portal
+  callback: "http://localhost:8000/api/auth/callback"
+
+  # Discord Application Client ID
+  client_id: "YOUR_DISCORD_CLIENT_ID"
+
+  # Discord server invite link
+  invite: "https://discord.gg/YOUR_INVITE_CODE"
+
+
+# Database Configuration
+database:
+  # Database name
+  db: "your_database_name"
+
+  # Collection name
+  collection: "your_collection_name"
+
+
+# Pterodactyl Configuration
+pterodactyl:
+  # Pterodactyl panel URL
+  url: "https://panel.example.com"
+
+  # Default Nest ID used when creating servers
+  nest_id: 1
+
+  # Available location IDs for server deployment
+  location_ids: 1
+
+  # Allowed port allocation range
+  # Leave empty to disable custom port restriction
+  port_range: []
+
+
+# Pricing Configuration
+price:
+  # Price per CPU
+  cpu: 5
+
+  # Price per MB of RAM
+  ram: 10
+
+  # Price per MB of disk storage
+  disk: 5

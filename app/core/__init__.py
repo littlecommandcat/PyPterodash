@@ -1,6 +1,7 @@
 from .client import pterclient
 from .auth import DiscordAuthService
 from .webhook import dchook
+from .security import AuthClient
 from .database import (
     datamanager,
     config

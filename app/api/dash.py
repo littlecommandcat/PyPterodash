@@ -154,18 +154,18 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
         result = await pterclient.create_server(
             name=server_name_input,
             user_id=int(panel_id),
-            nest_id=int(config.get_config("nest_id")),
+            nest_id=int(config.get_config("pterodactyl.nest_id")),
             egg_id=egg_id,
             memory_limit=req_memory,
             disk_limit=req_disk,
             cpu_limit=req_cpu,
-            swap_limit=int(config.get_config("swap", 0)),
-            io_limit=int(config.get_config("io", 500)),
-            docker_image=config.get_config("docker_image"),
-            startup_cmd=config.get_config("startup_command"),
-            environment=config.get_config("environment"),
-            location_ids=json.loads(config.get_config("location_ids", "[]")),
-            port_range=json.loads(config.get_config("port_range", "[]"))
+            swap_limit=int(config.get_config("pterodactyl.swap", 0)),
+            io_limit=int(config.get_config("pterodactyl.io", 500)),
+            docker_image=config.get_config("pterodactyl.docker_image"),
+            startup_cmd=config.get_config("pterodactyl.startup_command"),
+            environment=config.get_config("pterodactyl.environment"),
+            location_ids=json.loads(config.get_config("pterodactyl.location_ids", "[]")),
+            port_range=json.loads(config.get_config("pterodactyl.port_range", "[]"))
         )
 
         server_id = result.get("id")
@@ -176,7 +176,7 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
                 "server_id": server_id,
                 "identifier": identifier,
                 "server_name": server_name_input, 
-                "nest_id": int(config.get_config("nest_id", 1)),
+                "nest_id": int(config.get_config("pterodactyl.nest_id", 1)),
                 "egg_id": egg_id,
                 "memory": req_memory,
                 "cpu": req_cpu,
@@ -293,3 +293,4 @@ Email: `{user_email}`
                 "detail": str(e)
             }
         )
+    

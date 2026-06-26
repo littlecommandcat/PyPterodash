@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import yaml
 from dataclasses import dataclass, field, asdict
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -8,36 +9,44 @@ from pymongo import MongoClient
 
 class ConfigCache:
     def __init__(self):
-        self.config = {}
-        self.price = {}
+        self.config: dict = {}
+        self.reload()
 
-    def get_config(self, key: str, default: any = None, force: bool = True) -> str | None:
-        if key not in self.config or force:
-            load_dotenv()
-            self.config[key] = os.environ.get(key)
-
-        return self.config.get(key, default)
-    
-    def get_price(self, key: str, default: int = 5, force: bool = True) -> int:
-        if key not in self.config or force:
+    def reload(self):
+        load_dotenv()
+        
+        file = "setting.yml"
+        if not os.path.exists(file):
+            logging.error(f"Failed to find: {file}")
+            return
             
-            file = "price.json"
-            if not os.path.exists(file):
-                logging.error("Couldn't find price.json")
+        try:
+            with open(file, "r", encoding="utf-8") as f:
+                self.config = yaml.safe_load(f) or {}
+            logging.info("Load setting.yml")
+        except Exception as e:
+            logging.error(f"Failed to load setting.yml: {e}")
+
+    def get_config(self, key_path: str, default: any = None, force: bool = False):
+        if force or not self.config:
+            self.reload()
+
+        env_key = key_path.replace(".", "_").upper()
+        env_value = os.environ.get(env_key) or os.environ.get(key_path)
+        if env_value is not None:
+            return env_value
+        
+        keys = key_path.split(".")
+        current = self.config
+        
+        for k in keys:
+            if isinstance(current, dict) and k in current:
+                current = current[k]
+            else:
                 return default
                 
-            try:
-                with open(file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    self.price = data
-
-            except json.JSONDecodeError:
-                logging.error(f"{file} json type error.")
-
-            except Exception as e:
-                logging.error(f"Price loaded error: {e}")
-            
-            return self.price.get(key, default)
+        return current
+    
 
 class DataManager:
 
@@ -49,10 +58,8 @@ class DataManager:
     ):
         self.config = ConfigCache()
         self.uri: str | None = uri or self.config.get_config("mongo_uri")
-        self.db_name: str | None = db_name or self.config.get_config("mongo_db")
-        self.collection_name: str | None = collection_name or self.config.get_config(
-            "mongo_collection"
-        )
+        self.db_name: str | None = db_name or self.config.get_config("database.db")
+        self.collection_name: str | None = collection_name or self.config.get_config("database.collection")
 
         self.client = MongoClient(self.uri)
         self.db = self.client[self.db_name]

@@ -1,6 +1,7 @@
 import json
 import aiohttp
 import logging
+from .security import AuthClient
 from fastapi import HTTPException
 from fastapi.requests import Request
 
@@ -44,14 +45,15 @@ class DiscordAuthService:
                 return await user_resp.json()
     
     @staticmethod
-    def get_current_user(request: Request) -> str:
-        user_data = request.cookies.get("session_user")
-
-        if not user_data:
+    def get_current_user(request: Request) -> dict:
+        try:
+            user_data = AuthClient.get_current_user(request)
+        except Exception:
             raise HTTPException(
-                status_code=307,
+                status_code=401,
                 detail="Not authenticated",
                 headers={"Location": "/"},
             )
 
-        return json.loads(user_data)
+        return user_data
+    

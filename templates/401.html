@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="401_title"></title>
+    <link rel="stylesheet" href="/static/css/index.css">
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="login-card">
+
+        <div class="beautiful-select-wrapper">
+            <select id="language-switcher" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="zh-TW">繁體中文</option>
+            </select>
+        </div>
+
+        <h2 data-i18n="401_heading"></h2>
+
+        <p id="detail">{{ detail }}</p>
+
+        <a href="/" class="discord-btn">
+            <span data-i18n="401_home"></span>
+        </a>
+
+    </div>
+
+    <script src="/static/script.js"></script>
+
+</body>
+</html>

@@ -8,19 +8,59 @@ from .database import config, datamanager
 from .utils import generate_random_password
 
 
+class RequestQueue:
+    def __init__(self, delay_between_requests: float = 0.5):
+        self.queue: asyncio.Queue = asyncio.Queue()
+        self.delay = delay_between_requests
+        self._worker_task = None
+
+    async def start_worker(self):
+        if self._worker_task is None:
+            self._worker_task = asyncio.create_task(self._worker_loop())
+            logging.info("Async worker started")
+
+    async def _worker_loop(self):
+        while True:
+            try:
+                func, args, kwargs, future = await self.queue.get()
+                
+                try:
+                    result = await func(*args, **kwargs)
+                    future.set_result(result)
+                except Exception as e:
+                    future.set_exception(e)
+                finally:
+                    self.queue.task_done()
+                
+                await asyncio.sleep(self.delay)
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logging.error(f"Worker error: {e}")
+
+    async def push(self, async_func, *args, **kwargs):
+        await self.start_worker()
+
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+
+        await self.queue.put((async_func, args, kwargs, future))
+        return await future
+
+
 class PterodactylClient:
     def __init__(self):
+        self._servers_cache = {}
+
         self.config = config
-        self.base_url = self.config.get_config("panel_url").rstrip('/')
+        self.base_url = self.config.get_config("pterodactyl.url").rstrip('/')
         self.application_url = self.base_url + '/api/application'
         self.api_key = self.config.get_config("panel_key")
-        self.nest_id = self.config.get_config("nest_id")
+        self.nest_id = self.config.get_config("pterodactyl.nest_id")
 
         self.session = None
-
-        self.request_time = 0
-        self.cooldown_time = 2.5
-        self.lock = asyncio.Lock()
+        self.requestqueue = RequestQueue(delay_between_requests=0.5)
 
     def _init_session(self):
         if not self.session or self.session.closed:
@@ -41,18 +81,7 @@ class PterodactylClient:
         except Exception as e:
             logging.error(f"Error closing PterodactylClient session: {e}")
 
-    async def cooldown(self):
-        async with self.lock:
-            now = time.time()
-            cal_time = now - self.request_time
-
-            if cal_time < self.cooldown_time:
-                sleep_time = self.cooldown_time - cal_time
-                await asyncio.sleep(sleep_time)
-
-            self.request_time = time.time()
-
-    async def _send_request(self, method: str, endpoint: str, params: dict = None, data: dict = None):
+    async def _execute_http_request(self, method: str, endpoint: str, params: dict = None, data: dict = None):
         url = f"{self.application_url}/{endpoint}"
         self._init_session()
         
@@ -65,6 +94,9 @@ class PterodactylClient:
                 raise Exception(f"API Error ({response.status}): {res_json}")
             return res_json
 
+    async def _send_request(self, method: str, endpoint: str, params: dict = None, data: dict = None):
+        return await self.requestqueue.push(self._execute_http_request, method, endpoint, params, data)
+
     async def check_user(self, discord_id: str, email: str = None) -> tuple[bool, str]:
         try:
             profile = datamanager.find_one(query={"discord_id": str(discord_id)})
@@ -73,8 +105,6 @@ class PterodactylClient:
                 return True, str(profile.get("panel_id"))
 
             if email:
-                await self.cooldown()
-                
                 params = {"filter[email]": email}
                 response = await self._send_request("GET", "users", params=params)
 
@@ -100,18 +130,23 @@ class PterodactylClient:
         if not panel_id or str(panel_id) == "0":
             return []
 
+        panel_id = str(panel_id)
+        if panel_id in self._servers_cache:
+            return self._servers_cache[panel_id]
+
         try:
-            await self.cooldown()
             params = {"include": "servers"}
             raw_data = await self._send_request("GET", f"users/{panel_id}", params=params)
 
             data_root = raw_data.get("data", raw_data)
             attributes = data_root.get("attributes", data_root)
-
             relationships = attributes.get("relationships", {})
             servers_dict = relationships.get("servers", {})
+            
+            servers_list = servers_dict.get("data", [])
 
-            return servers_dict.get("data", [])
+            self._servers_cache[panel_id] = servers_list
+            return servers_list
 
         except Exception as e:
             logging.error(f"Error get {panel_id} server failed: {e}")
@@ -145,8 +180,6 @@ class PterodactylClient:
         description: str = None
     ) -> dict:
         try:
-            await self.cooldown()
-
             if default_allocation is None and not location_ids:
                 raise Exception('Must specify either default_allocation or location_ids')
 
@@ -212,7 +245,7 @@ class PterodactylClient:
             res_data = await self._send_request("POST", "servers", data=payload)
             response = res_data.get("attributes", res_data)
 
-            return {
+            new_server_result = {
                 "id": response.get("id"),
                 "externalId": response.get("external_id"),
                 "uuid": response.get("uuid"),
@@ -232,13 +265,30 @@ class PterodactylClient:
                 },
             }
 
+            user_key = str(user_id)
+            if user_key in self._servers_cache:
+                api_style_node = {"object": "server", "attributes": response}
+                self._servers_cache[user_key].append(api_style_node)
+
+            return new_server_result
+
         except Exception as e:
             raise Exception(f"Direct API create error: {str(e)}")
 
-    async def delete_server(self, server_id: int, force: bool = True) -> dict:
+    async def delete_server(self, server_id: int, user_id: int = None, force: bool = True) -> dict:
         endpoint = f"servers/{server_id}/force" if force else f"servers/{server_id}"
-        return await self._send_request("DELETE", endpoint)
-
+        resp = await self._send_request("DELETE", endpoint)
+        
+        if user_id:
+            user_key = str(user_id)
+            if user_key in self._servers_cache:
+                self._servers_cache[user_key] = [
+                    srv for srv in self._servers_cache[user_key]
+                    if srv.get("attributes", {}).get("id") != server_id
+                ]
+                
+        return resp
+    
     async def create_account(
         self,
         discord_id: str,
