@@ -1,4 +1,5 @@
 import json
+import re
 import logging
 import datetime
 from discord import Embed, Button
@@ -24,7 +25,7 @@ async def get_user_servers(request: Request, user: dict = Depends(DiscordAuthSer
         )
 
     try:
-        user_servers = datamanager.find_all(query={"discord_id": str(discord_id)})
+        user_servers = datamanager.find_one(query={"discord_id": str(discord_id)}).get("servers", [])
         
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -132,7 +133,18 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
                 "message": f"Disk limit exceeded. Available: {user_profile.get('max_disk', 0) - used_disk} MB"
             }
         )
+    server_name_input: str = server_data.get("name", server_data.get("server_name", f"Server_{discord_id}"))
+    server_name_input = server_name_input.strip().replace("\n", "").replace("\r", "")
 
+    if not re.fullmatch(r"[\w\s\-\u4e00-\u9fff]+", server_name_input):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "status": "error",
+                "message": "Server name contains invalid characters."
+            }
+        )
+    
     try:
         existed, panel_id = await pterclient.check_user(str(discord_id), email=user_email)
         if not existed:
@@ -149,8 +161,6 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
                 update_data={"$set": {"panel_id": str(panel_id)}}
             )
 
-        server_name_input = server_data.get("name", server_data.get("server_name", f"Server_{discord_id}"))
-
         result = await pterclient.create_server(
             name=server_name_input,
             user_id=int(panel_id),
@@ -164,8 +174,8 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
             docker_image=config.get_config("pterodactyl.docker_image"),
             startup_cmd=config.get_config("pterodactyl.startup_command"),
             environment=config.get_config("pterodactyl.environment"),
-            location_ids=json.loads(config.get_config("pterodactyl.location_ids", "[]")),
-            port_range=json.loads(config.get_config("pterodactyl.port_range", "[]"))
+            location_ids=config.get_config("pterodactyl.location_ids", [1]),
+            port_range=config.get_config("pterodactyl.port_range", [])
         )
 
         server_id = result.get("id")
@@ -258,7 +268,23 @@ async def delete_server_route(request: Request, user: dict = Depends(DiscordAuth
     discord_id = user.get("id")
     discord_name = user.get("username")
     user_email = user.get("email")
+    servers = datamanager.find_one(query={"discord_id": str(discord_id)}).get("servers", [])
+    server_list = set()
+    for server in servers:
+        server_list.add(str(server.get("server_id", 0)))
+
     try:
+        if str(server_id) not in server_list:
+            # logging.error(f"Delete error: {e}")
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={
+                    "status": "error",
+                    "message": "You are not allowed to delete server.",
+                    "detail": "The server owner is not you."
+                }
+            )
+        
         await pterclient.delete_server(server_id=str(server_id), force=force)
 
         datamanager.update_one(
@@ -284,7 +310,7 @@ Email: `{user_email}`
             "message": f"{discord_id}\nDeleted server (id:{server_id}) successfully, records cleared."
         }
     except Exception as e:
-        # logging.error(str(e))
+        logging.error(f"Delete error: {e}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={

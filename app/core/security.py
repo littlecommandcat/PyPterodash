@@ -1,9 +1,17 @@
 import json
 import secrets
+import logging
 from fastapi import Request, HTTPException, Depends
 from itsdangerous import Signer, BadSignature
+from .database import config
 
-SECRET_KEY = secrets.token_hex(64)
+if config.get_config("app.debug", False):
+    SECRET_KEY = config.get_config("app.key", "sfjsdghfdkjdlk")
+    # logging.info("Enable default key for debug mode.")
+else:
+    SECRET_KEY = secrets.token_hex(64)
+    # logging.info("Generated secret key.")
+
 signer = Signer(SECRET_KEY)
 
 class AuthClient:

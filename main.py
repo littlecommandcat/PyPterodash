@@ -30,7 +30,12 @@ async def lifespan(app: FastAPI):
     await dchook.close()
         # logging.info("[]")
 
-app = FastAPI(title="PyPterodash Discord Login", lifespan=lifespan)
+app = FastAPI(
+    title="PyPterodash Discord Login",
+    lifespan=lifespan,
+    docs_url=None if not config.get_config("app.docs", True) else "/docs",
+    redoc_url=None if not config.get_config("app.docs", True) else "/redoc"
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.mount("/static", StaticFiles(directory="static"), name="static")
