@@ -1,3 +1,118 @@
+async function updateUser(discordId) {
+    const payload = {
+        max_memory: Number(document.getElementById(`ram-${discordId}`).value),
+        max_cpu: Number(document.getElementById(`cpu-${discordId}`).value),
+        max_disk: Number(document.getElementById(`disk-${discordId}`).value),
+        coins: Number(document.getElementById(`coins-${discordId}`).value)
+    };
+
+    if (payload.max_memory <= 0 || payload.max_cpu <= 0 || payload.max_disk <= 0 || payload.coins < 0) {
+        await showModal("Update Failed", "Invalid value.");
+        return;
+    }
+
+    startLoading();
+
+    try {
+        const res = await fetch(`/api/admin/user/${discordId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        stopLoading();
+
+        if (!res.ok || !data.status) {
+            throw new Error(data.message || "Update failed");
+        }
+
+        await showModal(
+            "Success",
+            data.message || "User updated successfully."
+        );
+
+    } catch (err) {
+        stopLoading();
+        await showModal(
+            "Error",
+            err.message
+        );
+    }
+}
+
+
+async function resetPassword(discordId) {
+    const password = prompt("Enter new password");
+
+    if (!password) {
+        return;
+    }
+
+    if (password.length < 8) {
+        await showModal(
+            "Failed",
+            "Password must be at least 8 characters."
+        );
+        return;
+    }
+
+    const confirmed = await showConfirm(
+        "Confirm Password Change",
+        `Change password for user ${discordId}?`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    startLoading();
+
+    try {
+        const res = await fetch(`/api/admin/user/${discordId}/password`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                password: password
+            })
+        });
+
+        const data = await res.json();
+
+        stopLoading();
+
+        if (!res.ok || !data.status) {
+            throw new Error(data.message || "Password update failed");
+        }
+
+        await showModal(
+            "Success",
+            data.message || "Password updated successfully."
+        );
+
+    } catch (err) {
+        stopLoading();
+
+        await showModal(
+            "Error",
+            err.message
+        );
+    }
+}
+
+
+function handleLogout() {
+    fetch('/api/auth/logout', {
+        method: 'POST'
+    }).then(() => {
+        window.location.href = '/';
+    });
+}
 const defaultLocale = 'en';
 
 function startLoading() {

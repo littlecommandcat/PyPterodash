@@ -55,5 +55,27 @@
     "401_title": "Unauthorized Access",
     "401_heading": "Your session has expired or you are not authorized.",
     "401_redirect": "seconds before being redirected to the homepage.",
-    "401_home": "Return to Home"
+    "401_home": "Return to Home",
+    "admin_title":"Admin Panel",
+    "notification":"Notification",
+    "cancel":"Cancel",
+    "confirm":"Confirm",
+
+    "dashboard_btn":"Dashboard",
+    "user_management":"User Management",
+    "total_users":"Total Users",
+
+    "search_user":"Search User",
+    "discord_id_placeholder":"Discord ID",
+    "search_btn":"Search",
+
+    "user_settings":"User Settings",
+    "username":"Username",
+
+    "ram":"RAM (MB)",
+    "cpu":"CPU (%)",
+    "disk":"Disk (MB)",
+    "coins":"Coins",
+    "save_settings":"Save Settings",
+    "reset_password":"Reset Pterodactyl Password"
 }

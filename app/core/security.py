@@ -3,7 +3,7 @@ import secrets
 import logging
 from fastapi import Request, HTTPException, Depends
 from itsdangerous import Signer, BadSignature
-from .database import config
+from .database import config, datamanager
 
 if config.get_config("app.debug", False):
     SECRET_KEY = config.get_config("app.key", "sfjsdghfdkjdlk")
@@ -35,7 +35,14 @@ class AuthClient:
             raise HTTPException(status_code=401, detail="Invalid token or tampered cookie")
 
     @staticmethod
-    def is_user_admin(current_user: dict = Depends(get_current_user)) -> bool:
-        if not current_user.get("admin", False):
-            raise HTTPException(status_code=403, detail="Forbidden to control")
-        return current_user
+    async def is_user_admin(
+        current_user: dict = Depends(get_current_user)
+    ):
+        user = datamanager.find_one({"discord_id": current_user.get("id")})
+        if not user.get("admin", False):
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden to control"
+            )
+
+        return user

@@ -307,5 +307,30 @@ class PterodactylClient:
         user_data = response.get("attributes", response)
         return str(user_data.get("id"))
 
+    async def update_password(self, user_id: int, password: str):
+        try:
+            user_response = await self._send_request(
+                "GET",
+                f"users/{user_id}"
+            )
+
+            user = user_response.get("attributes", user_response)
+
+            payload = {
+                "email": user.get("email"),
+                "username": user.get("username"),
+                "first_name": user.get("first_name"),
+                "last_name": user.get("last_name"),
+                "password": password
+            }
+            response = await self._send_request(
+                "PATCH",
+                f"users/{user_id}",
+                data=payload
+            )
+            return response
+        
+        except Exception as e:
+            raise Exception(f"Password update failed: {str(e)}")
 
 pterclient = PterodactylClient()
