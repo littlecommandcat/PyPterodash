@@ -51,6 +51,12 @@ app:
   # Enable debug mode
   debug: false
 
+  # Debug secret key (If debug is true)
+  key: "sfjsdghfdkjdlk"
+
+  # Enable docs route
+  docs: false
+
 
 # Discord OAuth2 Configuration
 discord:
@@ -83,7 +89,7 @@ pterodactyl:
   nest_id: 1
 
   # Available location IDs for server deployment
-  location_ids: 1
+  location_ids: [1]
 
   # Allowed port allocation range
   # Leave empty to disable custom port restriction

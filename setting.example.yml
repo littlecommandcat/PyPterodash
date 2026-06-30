@@ -9,7 +9,7 @@ app:
   # Enable debug mode
   debug: false
 
-  # Debug secret key (if debug is true)
+  # Debug secret key (If debug is true)
   key: "sfjsdghfdkjdlk"
 
   # Enable docs route
