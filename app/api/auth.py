@@ -34,6 +34,11 @@ async def callback(request: Request, code: str = None):
         panel_id = None
         synced_servers = []
 
+        is_admin = False
+        default_admins = list(map(str, config.get_config("advance.admins", [])))
+        if discord_id in default_admins:
+            is_admin = True
+
         try:
             existed, fetched_panel_id = await pterclient.check_user(discord_id=discord_id, email=user_email)
             
@@ -66,12 +71,12 @@ async def callback(request: Request, code: str = None):
                 "discord_id": discord_id,
                 "username": user_name,
                 "email": user_email,
-                "admin": False,
+                "admin": is_admin,
                 "panel_id": panel_id,
-                "coin": 50,
-                "max_memory": 2048 if panel_id else 0,
-                "max_cpu": 200 if panel_id else 0,
-                "max_disk": 10240 if panel_id else 0,
+                "coin": config.get_config("advance.coin", 0),
+                "max_memory": max(0, config.get_config("advance.ram", 0)),
+                "max_cpu": max(0, config.get_config("advance.cpu", 0)),
+                "max_disk": max(0, config.get_config("advance.disk", 0)),
                 "servers": synced_servers
             }
             datamanager.insert_one(initial_profile)
@@ -81,6 +86,9 @@ async def callback(request: Request, code: str = None):
                 "email": user_email,
                 "servers": synced_servers
             }
+            if is_admin and not existing_user.get("admin", False):
+                update_data["admin"] = is_admin
+
             if panel_id:
                 update_data["panel_id"] = panel_id
                 
@@ -94,6 +102,8 @@ async def callback(request: Request, code: str = None):
             timestamp=datetime.datetime.now(),
             description=f"""User: <@{discord_id}>({user_name})
 Email: `{user_email}`
+Servers: `{len(synced_servers)}`
+Admin: `{is_admin}`
 """,
         )
         await dchook.post(embeds=[embed], username="[Auth]")

@@ -24,22 +24,6 @@ cp .env.example .env
 2. Open `.env` and fill in your variables:
 
 ```ini
-# Discord Bot OAuth2 Secret
-client_secret="YOUR_DISCORD_BOT_SECRET"
-
-# MongoDB Database Settings
-mongo_uri="mongodb://localhost:27017"
-
-# Pterodactyl Panel Key
-panel_key="ptla_your_admin_api_key_here"
-
-# System Logs & Notifications (Discord Webhook)
-discord_webhook="https://discord.com/api/webhooks/..."
-```
-
-3. Open `setting.yml` and fill your dash settings:
-
-```yml
 # Application Configuration
 app:
   # Host address to bind the web server
@@ -57,6 +41,19 @@ app:
   # Enable docs route
   docs: false
 
+# Advance settings
+advance:
+  # Put discord id str as list
+  admins: []
+
+  # Default settings (First login)
+  cpu: 50
+
+  ram: 512
+
+  disk: 1024
+
+  coin: 50
 
 # Discord OAuth2 Configuration
 discord:
@@ -148,7 +145,7 @@ pip install -r requirements.txt
 
 You can start the development server using either of the following methods:
 
-* **Method 1: Using Uvicorn (Recommended)**
+* **Method 1: Using Uvicorn**
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```

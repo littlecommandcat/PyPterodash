@@ -333,4 +333,25 @@ class PterodactylClient:
         except Exception as e:
             raise Exception(f"Password update failed: {str(e)}")
 
+
+    async def delete_user(self, user_id: int):
+        try:
+            response = await self._send_request(
+                "DELETE",
+                f"users/{user_id}"
+            )
+
+            if response.status_code not in [200, 204]:
+                raise Exception(
+                    f"Delete user failed: {response.status_code} {response.text}"
+                )
+
+            return True
+
+        except Exception as e:
+            logging.error(
+                f"Pterodactyl delete user error: {e}"
+            )
+            raise
+
 pterclient = PterodactylClient()

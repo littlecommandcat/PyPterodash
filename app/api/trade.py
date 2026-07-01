@@ -96,7 +96,7 @@ async def buy_resources(request: Request):
     discord_name = user_profile.get("username")
     user_email = user_profile.get("email")
     embed = Embed(
-        title=f"Buy item(`{item_type}`)",
+        title=f"Buy Item(`{item_type}`)",
         timestamp=datetime.datetime.now(),
         description=f"""User: <@{discord_id}>({discord_name if discord_name else "Failed to get"})
 Email: `{user_email}`

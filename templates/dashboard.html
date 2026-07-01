@@ -36,6 +36,9 @@
                 </select>
             </div>
             <a href="/shop" class="shop-btn" data-i18n="shop_btn"></a>
+            {% if admin|default(false) %}
+                <a href="/admin" class="admin-btn" data-i18n="admin_btn"></a>
+            {% endif %}
             <button class="logout-btn" onclick="handleLogout()" data-i18n="logout_btn"></button>
         </div>
     </div>
@@ -142,6 +145,6 @@
         <p id="no-server-text" style="color: #666; font-style: italic;" data-i18n="no_server"></p>
     {% endif %}
 
-    <script src="/static/script.js"></script>
+    <script src="/static/script/script.js"></script>
 </body>
 </html>

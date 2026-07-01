@@ -13,11 +13,11 @@ from slowapi.errors import RateLimitExceeded
 from app.routes import dashboard, shop, admin
 from app.core import limiter, templates, pterclient, DiscordAuthService, config, dchook, AuthClient
 from app.api import auth, dash, trade, admin as admin_api
-# app = FastAPI()
+
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s",
+    format="[%(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
@@ -28,7 +28,6 @@ async def lifespan(app: FastAPI):
         yield
     await pterclient.close()
     await dchook.close()
-        # logging.info("[]")
 
 app = FastAPI(
     title="PyPterodash Discord Login",

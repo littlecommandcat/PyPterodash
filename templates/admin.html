@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="admin_title"></title>
     <link rel="stylesheet" href="/static/css/dash.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
 </head>
 
 <div id="custom-modal" class="modal-overlay" style="display:none;">
@@ -27,102 +29,115 @@
 
 <body>
 
-<div class="header-section">
-    <h1 data-i18n="admin_title">Admin Panel</h1>
-    <div class="header-controls">
-        <div class="beautiful-select-wrapper">
-            <select id="language-switcher" onchange="changeLanguage(this.value)">
-                <option value="en">English</option>
-                <option value="zh-TW">繁體中文</option>
-            </select>
+    <div class="header-section">
+        <h1 data-i18n="admin_title">Admin Panel</h1>
+        <div class="header-controls">
+            <div class="beautiful-select-wrapper">
+                <select id="language-switcher" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="zh-TW">繁體中文</option>
+                </select>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()" data-i18n="logout_btn">Logout</button>
         </div>
-        <button class="logout-btn" onclick="handleLogout()" data-i18n="logout_btn">Logout</button>
-    </div>
-</div>
-
-<div class="status-bar">
-    <strong data-i18n="admin_user_count">Users</strong>
-    <code>{{ users|length }}</code>
-</div>
-
-<h2 data-i18n="user_list">User List</h2>
-
-{% if users %}
-{% for user in users %}
-
-<div class="server-card">
-
-    <div class="server-card-header">
-        <h3>{{ user.username|default("Unknown") }}</h3>
     </div>
 
-    <p>
-        <span data-i18n="discord_id">Discord ID</span>:
-        <strong>{{ user.discord_id }}</strong>
-    </p>
+    <div class="status-bar">
+        <strong data-i18n="admin_user_count">Users</strong>
+        <code>{{ users|length }}</code>
+    </div>
 
-    <p>
-        <span data-i18n="email">Email</span>:
-        <code>{{ user.email|default("None") }}</code>
-    </p>
+    <h2 data-i18n="user_list">User List</h2>
 
-    <p>
-        <span data-i18n="panel_id">Panel ID</span>:
-        <code>{{ user.panel_id|default("0") }}</code>
-    </p>
+    {% if users %}
+    {% for user in users %}
 
-    <div class="form-grid">
+    <div class="server-card">
 
-        <div class="form-group">
-            <label data-i18n="ram_quota">RAM</label>
-            <input type="number" id="ram-{{ user.discord_id }}" value="{{ user.max_memory|default(0) }}">
+        <div class="server-card-header">
+            <h3>{{ user.username|default("Unknown") }}</h3>
         </div>
 
-        <div class="form-group">
-            <label data-i18n="cpu_quota">CPU</label>
-            <input type="number" id="cpu-{{ user.discord_id }}" value="{{ user.max_cpu|default(0) }}">
+        <p>
+            <span data-i18n="discord_id">Discord ID</span>:
+            <strong>{{ user.discord_id }}</strong>
+        </p>
+
+        <p>
+            <span data-i18n="email">Email</span>:
+            <code>{{ user.email|default("None") }}</code>
+        </p>
+
+        <p>
+            <span data-i18n="panel_id">Panel ID</span>:
+            <code>{{ user.panel_id|default("0") }}</code>
+        </p>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label data-i18n="ram_quota">RAM</label>
+                <input type="number" id="ram-{{ user.discord_id }}" value="{{ user.max_memory|default(0) }}">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="cpu_quota">CPU</label>
+                <input type="number" id="cpu-{{ user.discord_id }}" value="{{ user.max_cpu|default(0) }}">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="disk_quota">Disk</label>
+                <input type="number" id="disk-{{ user.discord_id }}" value="{{ user.max_disk|default(0) }}">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="coins">Coins</label>
+                <input type="number" id="coins-{{ user.discord_id }}" value="{{ user.coins|default(0) }}">
+            </div>
+
         </div>
 
-        <div class="form-group">
-            <label data-i18n="disk_quota">Disk</label>
-            <input type="number" id="disk-{{ user.discord_id }}" value="{{ user.max_disk|default(0) }}">
+        <div class="admin-actions">
+
+            <button class="admin-btn save-btn"
+                onclick="updateUser('{{ user.discord_id }}')"
+                data-i18n="save_btn">
+                Save
+            </button>
+
+            <button class="admin-btn password-btn"
+                onclick="resetPassword('{{ user.discord_id }}')"
+                data-i18n="reset_password">
+                Reset Password
+            </button>
+
+            <button class="admin-btn remove-btn"
+                onclick="deleteUser('{{ user.discord_id }}')"
+                data-i18n="delete_user">
+                Delete User
+            </button>
+
         </div>
 
-        <div class="form-group">
-            <label data-i18n="coins">Coins</label>
-            <input type="number" id="coins-{{ user.discord_id }}" value="{{ user.coins|default(0) }}">
-        </div>
+        <p>
+            <span data-i18n="servers">Servers</span>:
+            <code>{{ user.servers|length }}</code>
+        </p>
 
     </div>
 
-    <div class="action-links">
-        <button class="submit-btn" onclick="updateUser('{{ user.discord_id }}')" data-i18n="save_btn">
-            Save
-        </button>
+    {% endfor %}
 
-        <button class="delete-btn" onclick="resetPassword('{{ user.discord_id }}')" data-i18n="reset_password">
-            Reset Password
-        </button>
-    </div>
+    {% else %}
 
-    <p>
-        <span data-i18n="servers">Servers</span>:
-        <code>{{ user.servers|length }}</code>
+    <p style="color:#666;font-style:italic;" data-i18n="no_users">
+        No users found.
     </p>
 
-</div>
+    {% endif %}
 
-{% endfor %}
-
-{% else %}
-
-<p style="color:#666;font-style:italic;" data-i18n="no_users">
-    No users found.
-</p>
-
-{% endif %}
-
-<script src="/static/admin.js"></script>
+    <script src="/static/script/admin.js"></script>
 
 </body>
+
 </html>

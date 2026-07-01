@@ -37,7 +37,7 @@ class AuthClient:
     @staticmethod
     async def is_user_admin(
         current_user: dict = Depends(get_current_user)
-    ):
+    ) -> dict | None:
         user = datamanager.find_one({"discord_id": current_user.get("id")})
         if not user.get("admin", False):
             raise HTTPException(

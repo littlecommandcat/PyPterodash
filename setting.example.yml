@@ -15,6 +15,19 @@ app:
   # Enable docs route
   docs: false
 
+# Advance settings
+advance:
+  # Put discord id str as list
+  admins: []
+
+  # Default settings (First login)
+  cpu: 50
+
+  ram: 512
+
+  disk: 1024
+
+  coin: 50
 
 # Discord OAuth2 Configuration
 discord:

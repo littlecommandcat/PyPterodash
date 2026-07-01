@@ -384,3 +384,45 @@ async function processPurchase(itemType) {
     }
 }
 
+async function deleteUser(discordId) {
+
+    const confirmed = await showConfirm(
+        "Delete User",
+        `Are you sure you want to delete user ${discordId}?`
+    );
+
+    if (!confirmed) return;
+
+    startLoading();
+
+    try {
+
+        const res = await fetch(`/api/admin/user/${discordId}`, {
+            method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        stopLoading();
+
+        if (!res.ok) {
+            throw new Error(data.message || data.detail || "Delete failed");
+        }
+
+        await showModal(
+            "Success",
+            "User deleted successfully"
+        );
+
+        location.reload();
+
+    } catch(err) {
+
+        stopLoading();
+
+        await showModal(
+            "Error",
+            err.message
+        );
+    }
+}

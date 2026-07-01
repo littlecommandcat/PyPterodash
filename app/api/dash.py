@@ -199,7 +199,7 @@ async def create_server_route(request: Request, user: dict = Depends(DiscordAuth
             )
             
             embed = Embed(
-                title=f"Create server(`{server_id}`)",
+                title=f"Create Server(`{server_id}`)",
                 timestamp=datetime.datetime.now(),
                 description=f"""User: <@{discord_id}>({discord_name if discord_name else "Failed to get"})
 Email: `{user_email}`
@@ -297,7 +297,7 @@ async def delete_server_route(request: Request, user: dict = Depends(DiscordAuth
         )
 
         embed = Embed(
-            title=f"Delete server(`{server_id}`)",
+            title=f"Delete Server(`{server_id}`)",
             timestamp=datetime.datetime.now(),
             description=f"""User: <@{discord_id}>({discord_name if discord_name else "Failed to get"})
 Email: `{user_email}`

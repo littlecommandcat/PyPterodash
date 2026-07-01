@@ -79,11 +79,14 @@ async def show_dashboard_page(request: Request):
 
         except Exception as ptero_err:
             logging.error(f"Async failed: {ptero_err}")
+
+    is_admin = user_profile.get("admin", False)
     return templates.TemplateResponse(
         name="dashboard.html",
         request=request,
         context={
             "user": user_profile,                
-            "servers": synced_servers
+            "servers": synced_servers,
+            "admin": is_admin
         }
     )
