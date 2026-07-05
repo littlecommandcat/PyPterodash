@@ -34,7 +34,7 @@ async def callback(request: Request, code: str = None):
         panel_id = None
         synced_servers = []
 
-        is_admin = False
+        is_admin = existing_user.get("admin", False)
         default_admins = list(map(str, config.get_config("advance.admins", [])))
         if discord_id in default_admins:
             is_admin = True
