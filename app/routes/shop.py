@@ -27,6 +27,7 @@ async def shop(request: Request):
             "user": user_profile,
             "ram": max(0, config.get_config("price.ram")),
             "cpu": max(0, config.get_config("price.cpu")),
-            "disk": max(0, config.get_config("price.disk"))
+            "disk": max(0, config.get_config("price.disk")),
+            "theme": config.theme
         }
     )

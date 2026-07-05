@@ -1,0 +1,310 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 16px;
+    background: #121212; /* Deep dark background */
+    color: #e0e0e0; /* Light grey text */
+    box-sizing: border-box;
+}
+
+.header-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    gap: 12px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+.beautiful-select-wrapper {
+    position: relative;
+    display: inline-block;
+    min-width: 120px;
+    flex: 0 0 auto;
+}
+
+.beautiful-select-wrapper::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    /* Updated SVG color to white */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    pointer-events: none;
+}
+
+select#language-switcher, select#server_egg {
+    background: #1e1e1e;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 8px 30px 8px 12px;
+    height: 38px;
+    cursor: pointer;
+    appearance: none;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.logout-btn, .shop-btn, .admin-btn {
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    box-sizing: border-box;
+    font-size: 14px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.logout-btn {
+    background: #e74c3c;
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+}
+
+.shop-btn, .admin-btn {
+    background: #3498db;
+}
+
+.shop-btn:hover, .admin-btn:hover {
+    background: #2980b9;
+}
+
+.status-bar {
+    background: #1e1e2d;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.8;
+    border-left: 5px solid #3498db;
+    color: #b5b5c3;
+}
+
+.create-section {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 1px solid #333;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-radius: 4px;
+    height: 38px;
+    background: #121212;
+    color: white;
+}
+
+.form-group input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.submit-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background: #219150;
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+
+.server-card {
+    border: 1px solid #333;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 8px;
+    background: #1e1e1e;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.server-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.server-card h3 {
+    color: #ffffff;
+    margin: 0;
+}
+
+.action-links {
+    margin-top: 15px;
+}
+
+.action-links a {
+    background: #5865F2;
+    color: white;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-box {
+    background: #1e1e1e;
+    padding: 24px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid #333;
+    color: white;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.modal-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-secondary {
+    background: #444;
+    color: white;
+}
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #333;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+@media(max-width:600px) {
+    body { margin: 16px auto; }
+    .header-section { flex-direction: column; align-items: flex-start; }
+    .header-controls { width: 100%; justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; }
+    .beautiful-select-wrapper { flex: 0 0 120px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full-width { grid-column: span 1; }
+    .server-card-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .delete-btn, .action-links a { width: 100%; text-align: center; box-sizing: border-box; }
+}
+
+/* Made with ChatGPT - Dark Mode Edition */

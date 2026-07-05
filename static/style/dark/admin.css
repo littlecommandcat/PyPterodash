@@ -1,0 +1,52 @@
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.admin-btn {
+    flex: 1;
+    height: 42px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s, background 0.2s;
+}
+
+.save-btn {
+    background: #169c4e;
+}
+
+.save-btn:hover {
+    background: #0d7a3a;
+}
+
+.password-btn {
+    background: #007bff; /* Orange for warning/change */
+}
+
+.password-btn:hover {
+    background: #2980b9;
+}
+
+.remove-btn {
+    background: #c0392b;
+}
+
+.remove-btn:hover {
+    background: #a93226;
+}
+
+@media(max-width:600px) {
+    .admin-actions {
+        flex-direction: column;
+    }
+
+    .admin-btn {
+        width: 100%;
+    }
+}

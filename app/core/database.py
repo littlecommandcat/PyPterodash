@@ -12,7 +12,19 @@ class ConfigCache:
     def __init__(self):
         self.config: dict = {}
         self.reload()
+        self._theme: str | None = None
 
+    @property
+    def theme(self) -> str:
+        if not self.config:
+            self.reload()
+        if not self._theme:
+            self._theme = self.get_config("app.theme", "dark")
+        if not os.path.isdir(f"static/style/{self._theme}"):
+            self._theme = "dark"
+        
+        return self._theme
+            
     def reload(self):
         load_dotenv()
         
@@ -27,7 +39,7 @@ class ConfigCache:
             logging.info("Load setting.yml")
         except Exception as e:
             logging.error(f"Failed to load setting.yml: {e}")
-
+    
     def get_config(self, key_path: str, default: any = None, force: bool = False):
         if force or not self.config:
             self.reload()

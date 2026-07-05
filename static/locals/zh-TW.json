@@ -71,7 +71,7 @@
     "ram": "記憶體 (MB)",
     "cpu": "CPU (%)",
     "disk": "磁碟 (MB)",
-    "coins": "點數",
+    "coins": "coins",
     "save_settings": "保存設定",
     "reset_password": "重設 Pterodactyl 密碼",
     "admin_btn": "管理員面板"

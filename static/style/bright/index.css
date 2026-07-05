@@ -130,25 +130,23 @@ body {
     background-color: #5865F2;
     color: white;
     border: none;
-    padding: 14px 20px;
+    padding: 10px 24px;    /* 整理合併：縮小後的內邊距 */
     border-radius: 8px;
-    width: 100%;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
+    width: auto;           /* 寬度隨內容自適應 */
+    display: inline-flex;  /* 關鍵：改為 inline-flex 才能套用父層的 text-align: center 達成置中 */
     justify-content: center;
     align-items: center;
     gap: 12px;
-    box-sizing: border-box;
-    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
 }
 
 .discord-btn:hover {
     background-color: #4752C4;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
+    transform: translateY(-1px);
 }
 
 .discord-btn:active {

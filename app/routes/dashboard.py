@@ -87,6 +87,7 @@ async def show_dashboard_page(request: Request):
         context={
             "user": user_profile,                
             "servers": synced_servers,
-            "admin": is_admin
+            "admin": is_admin,
+            "theme": config.theme
         }
     )

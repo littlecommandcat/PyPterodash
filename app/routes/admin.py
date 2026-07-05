@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from ..core import AuthClient, datamanager, templates
+from ..core import AuthClient, datamanager, templates, config
 
 router = APIRouter(prefix="/admin", tags=["Admin Page"])
 
@@ -28,7 +28,8 @@ async def admin_page(
             {
                 "request": request,
                 "admin": admin,
-                "users": users
+                "users": users,
+                "theme": config.theme
             }
         )
 

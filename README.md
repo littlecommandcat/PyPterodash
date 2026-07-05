@@ -46,6 +46,9 @@ advance:
   # Put discord id str as list
   admins: []
 
+  # Theme for dashboard (Default "dark")
+  theme: "dark"
+
   # Default settings (First login)
   cpu: 50
 
