@@ -10,9 +10,9 @@ from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.routes import dashboard, shop, admin
+from app.routers import dashboard, shop, admin
 from app.core import limiter, templates, pterclient, DiscordAuthService, config, dchook, AuthClient
-from app.api import auth, dash, trade, admin as admin_api
+from app.api import auth, dashboard as dash_api, shop as shop_api, admin as admin_api
 
 
 logging.basicConfig(
@@ -77,12 +77,15 @@ async def custom_401_handler(request: Request, exc: HTTPException):
         content={"status": "error", "detail": exc.detail}
     )
 
+# Routes
 app.include_router(dashboard.router)
 app.include_router(shop.router)
 app.include_router(admin.router)
+
+# API
 app.include_router(auth.router)
-app.include_router(dash.router)
-app.include_router(trade.router)
+app.include_router(dash_api.router)
+app.include_router(shop_api.router)
 app.include_router(admin_api.router)
 
 @app.get("/", response_class=HTMLResponse)
