@@ -9,7 +9,7 @@ from pymongo import MongoClient
 from .database import config, datamanager
 
 SESSION_COOKIE_NAME = "session_user"
-SESSION_TTL_SECONDS = 60 * 60 * 3
+SESSION_TTL_SECONDS = 10800 # 3 hours
 
 
 class _SessionStore:
