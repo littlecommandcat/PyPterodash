@@ -32,7 +32,7 @@ async def get_users(request: Request):
             status_code=500,
             content={
                 "status": False,
-                "message": str(e)
+                "message": "Internal server error"
             }
         )
 
@@ -143,7 +143,7 @@ Email: `{user_email}`
             status_code=500,
             content={
                 "status": False,
-                "message": str(e)
+                "message": "Internal server error"
             }
         )
 
@@ -235,7 +235,7 @@ Email: `{user_email}`
             status_code=500,
             content={
                 "status": False,
-                "message": str(e)
+                "message": "Internal server error"
             }
         )
     
@@ -328,6 +328,6 @@ Email: `{user_email}`
             status_code=500,
             content={
                 "status": False,
-                "message": str(e)
+                "message": "Internal server error"
             }
         )
