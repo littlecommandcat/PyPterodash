@@ -273,7 +273,8 @@ class PterodactylClient:
             return new_server_result
 
         except Exception as e:
-            raise Exception(f"Direct API create error: {str(e)}")
+            logging.error(f"Direct API create error: {e}")
+            raise Exception("Direct API create error")
 
     async def delete_server(self, server_id: int, user_id: int = None, force: bool = True) -> dict:
         endpoint = f"servers/{server_id}/force" if force else f"servers/{server_id}"
@@ -331,7 +332,8 @@ class PterodactylClient:
             return response
         
         except Exception as e:
-            raise Exception(f"Password update failed: {str(e)}")
+            logging.error(f"Password update failed: {e}")
+            raise Exception("Password update failed")
 
 
     async def delete_user(self, user_id: int):
