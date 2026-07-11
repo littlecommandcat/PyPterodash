@@ -15,10 +15,10 @@ async def buy_resources(request: Request):
         req_data = await request.json()
         item_type = req_data.get("item_type")
         raw_amount = req_data.get("amount", 1)
-    except Exception as e:
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"status": "error", "message": "Request JSON error", "detail": str(e)}
+            content={"status": "error", "message": "Request JSON error"}
         )
 
     if not config.get_config(f"price.{item_type}", None):

@@ -42,8 +42,7 @@ async def get_user_servers(request: Request, user: dict = Depends(DiscordAuthSer
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "status": "error",
-                "message": "Failed to get user's servers",
-                "detail": str(e)
+                "message": "Failed to get user's servers"
             }
         )
     
@@ -52,13 +51,12 @@ async def get_user_servers(request: Request, user: dict = Depends(DiscordAuthSer
 async def create_server_route(request: Request, user: dict = Depends(DiscordAuthService.get_current_user)):
     try:
         server_data = await request.json()
-    except Exception as e:
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
                 "status": "error",
-                "message": "Request json error",
-                "detail": str(e)
+                "message": "Request json error"
             }
         )
 
@@ -233,8 +231,7 @@ Email: `{user_email}`
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "status": "error",
-                "message": "Panel rejected request or internal automation failed",
-                "detail": str(e)
+                "message": "Panel rejected request or internal automation failed"
             }
         )
 
@@ -246,13 +243,12 @@ async def delete_server_route(request: Request, user: dict = Depends(DiscordAuth
         response = await request.json()
         server_id = response.get("server_id")
         force = response.get("force", False)
-    except Exception as e:
+    except Exception:
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "status": "error",
-                "message": "Request json error",
-                "detail": str(e)
+                "message": "Panel rejected request or internal automation failed"
             }
         )
 
@@ -315,8 +311,7 @@ Email: `{user_email}`
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "status": "error",
-                "message": "Failed to delete server",
-                "detail": str(e)
+                "message": "Failed to delete server"
             }
         )
     

@@ -1,5 +1,4 @@
 import logging
-import json
 import datetime
 from discord import Embed
 from ..core import DiscordAuthService, config, limiter, datamanager, pterclient, dchook, AuthClient
@@ -107,20 +106,24 @@ Admin: `{is_admin}`
 """,
         )
         await dchook.post(embeds=[embed], username="[Auth]")
-        encrypted = AuthClient.encrypt_session(user_data)
+        session_id = AuthClient.create_session(user_data)
         redirect_response = RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
         redirect_response.set_cookie(
-            key="session_user", 
-            value=encrypted, 
+            key="session_user",
+            value=session_id,
             httponly=True,
+            secure=not config.get_config("app.debug", False),
             samesite="lax",
-            max_age=10800
+            max_age=10800,
+            path="/",
         )
         return redirect_response
 
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Callback error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Authentication failed")
     
 @router.post("/logout")
 @limiter.limit("2/second;15/minute")
@@ -129,5 +132,6 @@ async def logout(request: Request):
         status_code=status.HTTP_200_OK,
         content={"status": "success", "message": "logout successfully"}
     )
-    response.delete_cookie(key="session_user")
+    AuthClient.delete_session(request)
+    response.delete_cookie(key="session_user", path="/")
     return response
